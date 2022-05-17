@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "recomendador-peliculas-345318",
+  "private_key_id": "0f1f75bf0b0db1c3f85ff0bd2bcf31752f600e50",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCP2xZJCkxQUhSb\nMDD4cgzcF9XDfbShoG/CcCVSAJZuF1J0QHY33P1Qp8et3zNUfLQjsH1eHtVzFTVu\n2S+MTQqJxkE/m3P42V3y8yAAwMdP+pDTrdzVPSoHRu2iwvPEmYE7WfX4Kx8/qQyU\ncw3ls8vMujyN4HKANJxPS35WHbpcYMr7eFx0mZLyO8EuVdT4TriXNHXC2BqgPi7s\nBWIhMl/CCt1WzmMlx1NScl/cyQxATdGAG/Fvz7mbfIzUh56M2Zao57zPaxFzwOSy\nCaZNZe8DprhgwaSAvKKrcS5KUCJn0lTT+/rQvl+EHS+KuflOOh5VdwJgJuf+Ks0L\n6JrCN75DAgMBAAECggEACnqlJvDvGjLAeYWLK63zLd02nyT7EYMEYR+WOGD+lEpy\noTFI60zXzxZJv2qw7Iig/rCOkVqhpd53o/mCMzAxglPE0QNb8Va0N0xqmmNwoWzZ\nO/JAUfBArYMHMIIPC9U6yr4E4u0RO6vu1KmE66SrReCTJKqi7J/oewY+z7sepjfy\n1IInJduy0jHXPYGFK8tx0pos7U+VxTR0f6RtDUfDxwZTsyHtfCcsnxL4POVxV2uj\noU1ozg9FDmQ9eHeXCuCPPAKP3UkXlM5s+s0kAc7OzVIQ0TO3TmHwmHq7GG1k2nZ5\nxi8vxft2t2zWJ1iwUC9U6ZttTDCOXrqmfmKuREx8sQKBgQDI2cWsxL50XSAdOPIf\nQbrtJ7duaiWMzKqb10z+3lIi3pVsHY9KdHi1U/wGCsAffLBjPMRlEuW6NePhDYjU\nPHy+Qb/zHZCfeo6aQQS/Xbz2ht7ffFKNz7yh7Q5NZM1Mj3TD2SxWRcBra3FD3DF3\nxwT6AHY8IXUFOg4/DoUeTutiXwKBgQC3WwXSU8rIChRgv9UIwnLj4qwiuN8A99Bm\nWn0mXD/0Bmp21FiyDWW9udiE8PB1rEomdsPc072JjMeLrCBilJfuyYMrZ80Zm1q8\nDuGTBIeVfbMIqCHX1sql/WBvQlx6sUGP3zJriCMhhY1FOUQ1HvtiRVOg1gdwenwn\nZ9KPRf/WnQKBgCu4i/kx0quN4gG6daosKr6ZGKrmXEor+y91TINmbca9YRVp0dlJ\nRUVjhMbj7DJueA8CGVZPKMbCGFrTEWfxys23jksjsmmkygn2AUyO4SVg8n7/lxDb\nmZo9+hEK0k3KJIbFbYtSH7LCbqNw+SuznPe2xgYM2mZK3vMG/B8+2qpNAoGAdduO\nXGn7+KVx/9aPCzhiPVVgrFkFD0w7qu8TburxONw+5u8LrDesZE3nfVyaVClQ6HSC\n5Zk9RgM16PPVRUiaeKUTKX1pesI/io5ONQA+XrsTr8bTKjgovpWlvR5872is6dvg\nPvqdClkcO5jZ3QNzNvG1Fbc9xPEWiQXVdL7b+okCgYEAn/K4bJs6vDReSO7QJ2Nq\n39nBzG6xaIcwXI2JdAm54Llb+3nCK/SEoc4Yx4KaMQoU2Q+3cUVHeHIon0uL35X6\ny9DbWHFfc05DnE8dHKkg82RCfm84RpkDlxMM3YWNLxvMotEqa8PNGAJqJ4KVn125\nEhBCX2poXt8O3bp5h+EgdwI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "chatbot-cuenta-servicios@recomendador-peliculas-345318.iam.gserviceaccount.com",
+  "client_id": "110795242356874240985",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/chatbot-cuenta-servicios%40recomendador-peliculas-345318.iam.gserviceaccount.com"
+}
