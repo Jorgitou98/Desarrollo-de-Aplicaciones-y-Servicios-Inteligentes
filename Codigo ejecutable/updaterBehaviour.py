@@ -2,11 +2,11 @@ from spade.behaviour import CyclicBehaviour
 import json
 import pickle
 import pandas as pd
+from surprise import SVD, Reader
+from surprise import Dataset
 
 class UpdaterBehaviour(CyclicBehaviour):
 
-    # Establecemos un atributo de clase Python con el threshold de valoraciones mínimo para realicar una actualización
-    thresholdUpdate = 10
 
     async def run(self):
         # Esperamos para recibir un mensaje del agente chatbot los datos de la valoración hecha por el usuario
@@ -19,27 +19,12 @@ class UpdaterBehaviour(CyclicBehaviour):
         if not ratingInfo:
             return
 
+        # Actualizamos el modelo basado en contenido (se encarga de actualizar la tabla de valoraciones)
         await self.__updateContentBasedModel(ratingInfo)
 
-        ## Esta parte del código se utilizará cuando introduzcamos el modelo colaborativo,
-        ## por ahora la dejamos comentada, aunque ya preparada
-        # filePending = open("ratingsPending.pkl", "rb")
-        # ratingsPending = pickle.load(filePending)
-        # filePending.close()
-        # # Añadimos la valoración a las pendientes de actualizarse
-        # ratingsPending.append(ratingInfo)
-
-        # # Si ya hemos alcanzado el mínimo de valoraciones para actualizar los modelos
-        # if len(ratingsPending) >= self.thresholdUpdate:
-        #     # Realizamos la actualización de los modelos
-        #     await self.__updateUserCollaborativeModel(ratingsPending)
-        #     # Dejamos de tener valoraciones pendientes de actualizar
-        #     ratingsPending = []
-
-        # #Escribimos en el fichero guardando la nueva lista de valoraciones pendientes
-        # filePending = open("ratingsPending.pkl", "wb")
-        # pickle.dump(ratingsPending, filePending)
-        # filePending.close()
+        # Actualizamos el modelo colaborativo (utiliza la tabla de valoraciones ya actualizada)
+        await self.__updateUserCollaborativeModel()
+        
 
     async def __updateContentBasedModel(self, ratingInfo):
         ratingsOrdered = pd.read_csv("ratings_ordered.csv")
@@ -74,13 +59,33 @@ class UpdaterBehaviour(CyclicBehaviour):
         # Obtenemos el ID de la película valorada a través de la tabla anterior
         movieID = movieTitleIDTable[ratingInfo["moviename"]]
 
+        name = ratingInfo["username"]
+
+        # En caso de que el usuario no esté en la tabla (puede ser nuevo), le añadimos con un identificador más que el máximo
+        if name not in nameIDTable:
+            nameIDTable[name] = max(nameIDTable.values()) + 1
+            fileTable = open("nameIDTable.pkl", "wb")
+            pickle.dump(nameIDTable, fileTable)
+            fileTable.close()
+
         # Obtenemos el ID del usuario que valora la película a través de la tabla anterior
-        userID = nameIDTable[ratingInfo["username"]]
+        userID = nameIDTable[name]
 
         return movieID, userID
 
 
-    """ Función que actualiza el modelo colaborativo, aún por implementar"""
-    async def __updateUserCollaborativeModel(self, ratingsPending):
-        pass
-
+    """ Función que actualiza el modelo colaborativo"""
+    async def __updateUserCollaborativeModel(self):
+        # Cargamos el dataset de valoraciones actualizado
+        ratings = pd.read_csv('ratings_ordered.csv')
+        # Transformamos los datos al formato en que espera recibirlos la libreria
+        data = Dataset.load_from_df(ratings[['userId', 'movieId', 'rating']], Reader())
+        # Creamos la intancia del objeto que realizará la factorización matricial
+        collabModel = SVD()
+        # Entrenamos el modelo con los datos
+        data_train = data.build_full_trainset()
+        collabModel.fit(data_train)
+        # Actualizamos el modelo en el fichero "collabModel.pkl" para el recomendador
+        fileTable = open("collabModel.pkl", "wb")
+        pickle.dump(collabModel, fileTable)
+        fileTable.close()

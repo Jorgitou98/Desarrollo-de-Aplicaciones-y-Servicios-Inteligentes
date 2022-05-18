@@ -6,7 +6,6 @@ from spade.agent import Agent
 from chatbotBehaviour import ChatbotBehaviour
 
 
-
 class ChatbotAgent(Agent):
 
     def __init__(self, *args, **kwargs):
@@ -19,18 +18,17 @@ class ChatbotAgent(Agent):
         sessionID = uuid.uuid4()
         self.languageCode = "en-us"
         self.sessionPath = f"{agentDialogflow}/sessions/{sessionID}"
-        #print(f"Session path: {self.sessionPath}\n")
-        #detect_intent_texts(agent, session_id, texts, language_code)
         agentComponents = AgentsClient.parse_agent_path(agentDialogflow)
         agentLocationID = agentComponents["location"]
         if agentLocationID != "global":
             api_endpoint = f"{agentLocationID}-dialogflow.googleapis.com:443"
-            #print(f"API Endpoint: {api_endpoint}\n")
             client_options = {"api_endpoint": api_endpoint}
         self.sessionClient = SessionsClient(credentials=credentials, client_options=client_options)
-        #self.detect_intent_texts(sessionClient, sessionPath, language_code)
+        self.userText = None
 
     async def setup(self):
-        print("MovieBot> Hi, welcome to your movie recommender.\n")
         chatbotBehaviour = ChatbotBehaviour()
         self.add_behaviour(chatbotBehaviour)
+    
+    def setGui(self, gui):
+        self.gui = gui
