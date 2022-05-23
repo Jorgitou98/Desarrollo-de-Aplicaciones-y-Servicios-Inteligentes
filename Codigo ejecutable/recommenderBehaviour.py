@@ -8,6 +8,14 @@ import json
 
 class RecommenderBehaviour(CyclicBehaviour):
 
+    """
+    Constituye un ciclo del comportamiento que repite el Agente Recomendador.
+    Recibe un mensaje del Agente Chatbot con los parámetros necesarios para a recomendación,
+    carga la información de los modelos de recomendación y las tablas auxiliares necesarias,
+    y calcula las películas recomendadas enviando un mensaje de vuelta al Agente Chatbot.
+
+    :param self: objeto de la clase con el que se invoca.
+    """  
     async def run(self):
         # Esperamos para recibir un mensaje del agente chatbot con el nombre y quizás las preferencias de la recomendación
         # Es necesario poner un timeout (tiempo máximo de espera) porque un valor a None se entiende como sin espera. Lo
@@ -25,12 +33,22 @@ class RecommenderBehaviour(CyclicBehaviour):
         # Calculamos las recomendaciones para el usuario apoyandonos en las tablas cargadas
         recommendationResponse = self.__calculateRecommendations(userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable)
 
+        # Enviamos un mensaje de vuelta para el Agente Chabot con la recomendaciones calculadas.
         msgRecommendations = Message(to="chatbot@xabber.de")
         msgRecommendations.body = json.dumps(recommendationResponse)
         await self.send(msgRecommendations)
         time.sleep(0.2)
 
+    """
+    Carga los modelos de recomendación precalculados y la tablas con la información necesaria
+    para recomendar al usuario (por ejemplo, sus valoraciones ordenadas de mayor a menor puntuación)
 
+    :param self: objeto de la clase con el que se invoca.
+    :param name: nombre del usuario al que recomendar películas.
+    :returns: modelo basado en contenido, valoraciones del usuario ordenadas, diccionario de ID de película
+              a la posición que ocupa en la matriz del modelo basado en contenido, diccionario de ID de
+              pelicula al título de la película, y diccionario de nombre de usuario a su ID interno.
+    """  
     def __loadTables(self, name):
         # Cargamos la tabla que traduce de nombre de usuario a su identificador
         fileTable = open("nameIDTable.pkl", "rb")
@@ -75,7 +93,19 @@ class RecommenderBehaviour(CyclicBehaviour):
 
 
 
+    """
+    Calcula las recomendaciones, distinguiendo si se trata de un usuario sin valoraciones previas,
+    y si hay alguna preferencia de género de cara a la recomendación.
 
+    :param self: objeto de la clase con el que se invoca.
+    :param userInfo: información del usuario al que se hace la recomendación en forma de diccionario.
+    :param ratingsOrdered: valoraciones del usuario ordenadas de mayor a menor puntuación.
+    :param contentBasedModelIdx: referencia a la matriz con el modelo basado en contenido.
+    :param movieIDIndexTable: diccionario de ID de película a la posición que ocupa en la matriz del modelo basado en contenido.
+    :param movieIDTitleTable: diccionario de ID de pelicula al título de la película.
+    :param nameIDTable: diccionario de nombre de usuario a su ID interno.
+    :returns: diccionario con las listas de contenido recomendadas.
+    """  
     def __calculateRecommendations(self, userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable):
         # Si se trata de un usuario sin ninguna valoración, devolvemos una recomendación especial (no se basa en su perfil) 
         if ratingsOrdered.size == 0:
@@ -89,11 +119,22 @@ class RecommenderBehaviour(CyclicBehaviour):
         return self.__calculateRecommendationsWithGenre(userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable)
         
         
+    """
+    Calcula las recomendaciones sin imponer ningún tipo de restricción en el género de las películas.
 
+    :param self: objeto de la clase con el que se invoca.
+    :param userInfo: información del usuario al que se hace la recomendación en forma de diccionario.
+    :param ratingsOrdered: valoraciones del usuario ordenadas de mayor a menor puntuación.
+    :param contentBasedModelIdx: referencia a la matriz con el modelo basado en contenido.
+    :param movieIDIndexTable: diccionario de ID de película a la posición que ocupa en la matriz del modelo basado en contenido.
+    :param movieIDTitleTable: diccionario de ID de pelicula al título de la película.
+    :param nameIDTable: diccionario de nombre de usuario a su ID interno.
+    :returns: diccionario con las listas de contenido recomendadas sin restricción de género.
+    """  
     def __calculateRecommendationsWithoutGenre(self, userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable):
         
         # Calculamos las recomendaciones basadas en contenido
-        contentBasedRecommendation = self.__recomedationsContentBasedModel(userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable)
+        contentBasedRecommendation = self.__recommedationsContentBasedModel(ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable)
 
         # Calculamos también las recomendaciones con el modelo colaborativo
         collabRecommendation = self.__recommendationsCollabModel(userInfo, ratingsOrdered, movieIDTitleTable, nameIDTable)
@@ -105,7 +146,19 @@ class RecommenderBehaviour(CyclicBehaviour):
         # Devolvemos las recomendaciones
         return recommendations
 
+    """
+    Calcula las recomendaciones imponiendo que las películas pertenezcan al género que el usuario
+    indicó que prefiere ver.
 
+    :param self: objeto de la clase con el que se invoca.
+    :param userInfo: información del usuario al que se hace la recomendación en forma de diccionario.
+    :param ratingsOrdered: valoraciones del usuario ordenadas de mayor a menor puntuación.
+    :param contentBasedModelIdx: referencia a la matriz con el modelo basado en contenido.
+    :param movieIDIndexTable: diccionario de ID de película a la posición que ocupa en la matriz del modelo basado en contenido.
+    :param movieIDTitleTable: diccionario de ID de pelicula al título de la película.
+    :param nameIDTable: diccionario de nombre de usuario a su ID interno.
+    :returns: diccionario con las listas de contenido recomendadas del género indicado por el usuario.
+    """ 
     def __calculateRecommendationsWithGenre(self, userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable):
         recommendationResponse = {}
         # Calculamos los IDs de películas que son del género solicitado por el usuario (userInfo["genre"] es el género indicado por el usuario)
@@ -156,10 +209,15 @@ class RecommenderBehaviour(CyclicBehaviour):
         return recommendationResponse
 
 
-    
 
+    """
+    Calcula recomendaciones simplemente por popularidad de las películas (número de valoraciones).
+    Se instancia cuando el usuario al que hay que recomendar no tiene valoraciones previas en el sistema.
 
-    """ Método para recomendar películas a usuarios de los que no han hecho aún ninguna valoración, simplemente por popularidad."""
+    :param self: objeto de la clase con el que se invoca.
+    :param userInfo: información del usuario al que se hace la recomendación en forma de diccionario.
+    :returns: diccionario con la lista recomendaciones según popularidad de las películas.
+    """ 
     def __recommendUserWithoutRatings(self, userInfo):
         # Cargamos las películas del catálogo
         movieClean = pd.read_csv("movies_catalog_clean.csv")
@@ -179,8 +237,18 @@ class RecommenderBehaviour(CyclicBehaviour):
         return {"recommendationPopularWithGenre": popularMovies[:5].to_list()}
         
 
+    """
+    Calcula recomendaciones, sin imponer restricción en el género de las películas, mediante el modelo basado en contenido.
 
-    def __recomedationsContentBasedModel(self, userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable):
+    :param self: objeto de la clase con el que se invoca.
+    :param ratingsOrdered: valoraciones del usuario ordenadas de mayor a menor puntuación.
+    :param contentBasedModelIdx: referencia a la matriz con el modelo basado en contenido.
+    :param movieIDIndexTable: diccionario de ID de película a la posición que ocupa en la matriz del modelo basado en contenido.
+    :param movieIDTitleTable: diccionario de ID de pelicula al título de la película.
+    :param nameIDTable: diccionario de nombre de usuario a su ID interno.
+    :returns: lista de los 3 IDs de película más recomendables con este modelo.
+    """ 
+    def __recommedationsContentBasedModel(self, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable):
         # Tomamos las películas valoradas por el usuario con al menos un 4
         favMovies = ratingsOrdered[ratingsOrdered["rating"] >= 4][:1]["movieId"].values
         
@@ -196,15 +264,28 @@ class RecommenderBehaviour(CyclicBehaviour):
 
         return recommendationOrder[:3]
 
-    """ Ordena las películas que no ha visto el usuario de más a menos recomendables según el valor
-    predicho con el modelo basado en contenido. """
+
+    """
+    Calcula recomendaciones, sin imponer de momento restricción en el género de las películas,
+    mediante el modelo colaborativo.
+
+    :param self: objeto de la clase con el que se invoca.
+    :param userInfo: información del usuario al que se hace la recomendación en forma de diccionario.
+    :param ratingsOrdered: valoraciones del usuario ordenadas de mayor a menor puntuación.
+    :param movieIDTitleTable: diccionario de ID de pelicula al título de la película.
+    :param nameIDTable: diccionario de nombre de usuario a su ID interno.
+    :returns: lista de todos los IDs de películas que el usuario no ha valorado ordenados de más a menos
+              recomendable según la puntuación predicha con modelo colaborativo.
+    """ 
     def __recommendationsCollabModel(self, userInfo, ratingsOrdered, movieIDTitleTable, nameIDTable):
         # Cargamos el modelo colaborativo
         fileTable = open("collabModel.pkl", "rb")
         collabModel = pickle.load(fileTable)
         fileTable.close()
+        
         # Computamos los IDs de las películas que el usuario aún no ha valorado
         moviesIDNotValorated = list(set(movieIDTitleTable.keys()) - set(ratingsOrdered["movieId"].values))
+        
         # Mapeamos cada identificador de película sin valorar a la tupla formada por dicho ID y la pruntuación predicha para él
         moviesIDAndPredictedScore = list(map(lambda movieID: (movieID, collabModel.predict(nameIDTable[userInfo["username"]], movieID).est), moviesIDNotValorated))
         

@@ -10,98 +10,149 @@ TEXT_COLOR = "#EAECEE"
 FONT = "Helvetica 12"
 FONT_BOLD = "Helvetica 11 bold"
 
-class ChatApplication:
+class GUI:
     
+    """
+    Constructor de la interfaz gráfica con el usuario.
+    
+    :param self: objeto de la clase con el que se invoca.
+    """
     def __init__(self):
+        # Creación de la ventana para la interfaz.
         self.window = Tk()
-        self._setup_main_window()
-        
+        # Configuración de la ventana
+        self._setupMainWindow()
+    
+
+    """
+    Método que se ejecuta para lanzar la interfaz gráfica una vez está configurada.
+    
+    :param self: objeto de la clase con el que se invoca.
+    """
     def run(self):
+        # Creamos al Agente Recomendador e iniciamos su comportamiento.
         self.recommenderAgent = RecommenderAgent("recomendador@xabber.de", "recomendador")
         future = self.recommenderAgent.start()
         future.result()
 
+        # Creamos al Agente Actualizador e iniciamos su comportamiento.
         self.updaterAgent = UpdaterAgent("actualizador@xabber.de", "actualizador")
         future = self.updaterAgent.start()
         future.result()
         
-
+        # Creamos al Agente Chatbot e iniciamos su comportamiento.
         self.chatbotAgent = ChatbotAgent("chatbot@xabber.de", "chatbot")
         self.chatbotAgent.setGui(self)
         future = self.chatbotAgent.start()
         future.result()
 
-
-        # while chatbotAgent.is_alive() and updaterAgent.is_alive and recommenderAgent.is_alive :
-        #     try:
-        #         time.sleep(1)
-        #     except KeyboardInterrupt:
-        #         chatbotAgent.stop()
-        #         updaterAgent.stop()
-        #         recommenderAgent.stop()
-        #         break
+        # Entramos en el bucle infinito de funcionamiento de la interfaz.
         self.window.mainloop()
 
+    """
+    Método que se ejecuta para finalizar la interfaz gráfica.
+    
+    :param self: objeto de la clase con el que se invoca.
+    """   
     async def quit(self):
+        # Finalizamos el comportamiento Agente Chatbot.
         await self.chatbotAgent.stop()
+        # Finalizamos el comportamiento Agente Actualizador.
         await self.updaterAgent.stop()
+        # Finalizamos el comportamiento Agente Recomendador.
         await self.recommenderAgent.stop()
+        # Destruimos la ventana de la interfaz.
         self.window.destroy()
-        
-    def _setup_main_window(self):
+    
+    """
+    Método de configuración de la interfaz gráfica.
+    
+    :param self: objeto de la clase con el que se invoca.
+    """     
+    def _setupMainWindow(self):
+        # Colocamos el título de la interfaz
         self.window.title("Chat")
+        # Permitimos redimensionarla en anchura pero no en altura.
         self.window.resizable(width=True, height=False)
+        # Configuramos las dimensiones y el color de fondo de la interfaz.
         self.window.configure(width=900, height=800, bg=BG_COLOR)
         
-        # head label
+        # Colocamos la etiqueta de la cabecera de la interfaz
         head_label = Label(self.window, bg=BG_COLOR, fg=TEXT_COLOR,
                            text="Movie recommender chatbot", font=FONT_BOLD, pady=10)
         head_label.place(relwidth=1)
         
-        # tiny divider
+        # Colocamos un separador entre la cabecera y el widget de texto
         line = Label(self.window, width=450, bg=BG_GRAY)
         line.place(relwidth=1, rely=0.07, relheight=0.012)
         
-        # text widget
+        # Colocamos un widget done aparecerá el texto de la conversación.
         self.text_widget = Text(self.window, width=20, height=2, bg=BG_COLOR, fg=TEXT_COLOR,
                                 font=FONT, padx=5, pady=5)
         self.text_widget.place(relheight=0.745, relwidth=1, rely=0.08)
         self.text_widget.configure(cursor="arrow", state=DISABLED)
         
-        # scroll bar
+        # Colocamos una barra de desplazamiento vertical.
         scrollbar = Scrollbar(self.text_widget)
         scrollbar.place(relheight=1, relx=0.974)
         scrollbar.configure(command=self.text_widget.yview)
         
-        # bottom label
+        # Preparamos una etiqueta para un botón que permitrá introducir el texto de la entrada.
         bottom_label = Label(self.window, bg=BG_GRAY, height=80)
         bottom_label.place(relwidth=1, rely=0.825)
         
-        # message entry box
+        # Colocamos una caja para la entrada de texto.
         self.msg_entry = Entry(bottom_label, bg="#2C3E50", fg=TEXT_COLOR, font=FONT)
         self.msg_entry.place(relwidth=0.74, relheight=0.06, rely=0.008, relx=0.011)
         self.msg_entry.focus()
-        self.msg_entry.bind("<Return>", self._on_enter_pressed)
+        self.msg_entry.bind("<Return>", self._onEnterPressed)
         
-        # send button
+        # Colocamos un botón que permitirá introducir el texto escrito en la entrada.
+        # Presionar este botón invocará al método "_onEnterPressed".
         send_button = Button(bottom_label, text="Send", font=FONT_BOLD, width=20, bg=BG_GRAY,
-                             command=lambda: self._on_enter_pressed(None))
+                             command=lambda: self._onEnterPressed(None))
         send_button.place(relx=0.77, rely=0.008, relheight=0.06, relwidth=0.22)
      
-    def _on_enter_pressed(self, event):
+    """
+    Método que se ejecuta cuando el usuario presiona el botón "enter".
+    
+    :param self: objeto de la clase con el que se invoca.
+    :param event: evento que desencadena la ejecución del método.
+    """ 
+    def _onEnterPressed(self, event):
+        # Tomamos el mensaje escrito en la entrada.
         msg = self.msg_entry.get()
-        self.insert_message(msg, "User")
+        # Mostramos el mensaje en la ventana de texto de la conversación.
+        self.insertMessage(msg, "User")
+        # Nos desplazamos hasta la última línea que se haya escrito en la ventana de texto.
+        self.text_widget.see("end")
+        # Le dejamos al chatbot el texto escrito por el usuario.
         self.chatbotAgent.userText = msg
-        
-        
-    def insert_message(self, msg, sender = None):
+
+    """
+    Método que muestra el mensaje recibido por la ventana de texto
+    de la interfaz gráfica.
+    
+    :param self: objeto de la clase con el que se invoca.
+    :param msg: cadena con el texto a mostrar.
+    :param sender: quién dice la frase mostrada (habitualmente user o movieBot para mostrarlo antes del mensaje).
+    """         
+    def insertMessage(self, msg, sender = None):
+        # Si el mensaje es vacío, no se hace nada.
         if not msg:
-            return      
+            return
+        # Borramos la entrada de la GUI.
         self.msg_entry.delete(0, END)
+
+        # Si no nos han indicado quién dice la frase.
         if sender is None:
+            # Preparamos la cadena con el mensaje introduciendo saltos de linea.
             msg1 = f"{msg}\n\n"
+        # Si nos han indicado quién dice la frase.
         else:
+            # Preparamos la cadena con el remitente seguido del mensaje introduciendo saltos de linea.
             msg1 = f"{sender}: {msg}\n\n"
         self.text_widget.configure(state=NORMAL)
+        # Colocamos en la ventana de texto la cadena creada.
         self.text_widget.insert(END, msg1)
         self.text_widget.configure(state=DISABLED)
