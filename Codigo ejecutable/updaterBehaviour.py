@@ -29,7 +29,7 @@ class UpdaterBehaviour(CyclicBehaviour):
             return
 
         # Cargamos los datos de valoraciones en el sistema
-        ratingsOrdered = pd.read_csv("ratings_ordered.csv")
+        ratingsOrdered = pd.read_csv("utils/ratings_ordered.csv")
 
         # Cargamos el identificador de película y usuario correspondientes a la valoración recibida.
         movieID, userID = self.__getUserAndMovieID(ratingInfo)
@@ -77,7 +77,7 @@ class UpdaterBehaviour(CyclicBehaviour):
         ratingsOrdered = ratingsOrdered.sort_values(by=['userId', 'rating'], ascending=False)
 
         # Almacenamos las nuevas valoraciones (ya con la que acabamos de añadir)
-        ratingsOrdered.to_csv("ratings_ordered.csv", index=False)
+        ratingsOrdered.to_csv("utils/ratings_ordered.csv", index=False)
 
 
     """
@@ -88,7 +88,7 @@ class UpdaterBehaviour(CyclicBehaviour):
     """  
     async def __updateUserCollaborativeModel(self):
         # Cargamos el dataset de valoraciones actualizado
-        ratings = pd.read_csv('ratings_ordered.csv')
+        ratings = pd.read_csv('utils/ratings_ordered.csv')
         # Transformamos los datos al formato en que espera recibirlos la libreria
         data = Dataset.load_from_df(ratings[['userId', 'movieId', 'rating']], Reader())
         # Creamos la intancia del objeto que realizará la factorización matricial
@@ -97,7 +97,7 @@ class UpdaterBehaviour(CyclicBehaviour):
         data_train = data.build_full_trainset()
         collabModel.fit(data_train)
         # Actualizamos el modelo en el fichero "collabModel.pkl" para el recomendador
-        fileTable = open("collabModel.pkl", "wb")
+        fileTable = open("utils/collabModel.pkl", "wb")
         pickle.dump(collabModel, fileTable)
         fileTable.close()
 
@@ -112,12 +112,12 @@ class UpdaterBehaviour(CyclicBehaviour):
     """  
     def __getUserAndMovieID(self, ratingInfo):
             # Cargamos la tabla que dado un nombre de usuario nos devuelve su ID
-            fileTable = open("movieTitleIDTable.pkl", "rb")
+            fileTable = open("utils/movieTitleIDTable.pkl", "rb")
             movieTitleIDTable = pickle.load(fileTable)
             fileTable.close()
 
             # Cargamos la tabla que traduce de nombre de usuario a su ID
-            fileTable = open("nameIDTable.pkl", "rb")
+            fileTable = open("utils/nameIDTable.pkl", "rb")
             nameIDTable = pickle.load(fileTable)
             fileTable.close()
 
@@ -129,7 +129,7 @@ class UpdaterBehaviour(CyclicBehaviour):
             # En caso de que el usuario no esté en la tabla (puede ser nuevo), le añadimos con un identificador más que el máximo
             if name not in nameIDTable:
                 nameIDTable[name] = max(nameIDTable.values()) + 1
-                fileTable = open("nameIDTable.pkl", "wb")
+                fileTable = open("utils/nameIDTable.pkl", "wb")
                 pickle.dump(nameIDTable, fileTable)
                 fileTable.close()
 

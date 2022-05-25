@@ -1,7 +1,9 @@
+from time import sleep
 from tkinter import *
 from chatbotAgent import ChatbotAgent
 from recommenderAgent import RecommenderAgent
 from updaterAgent import UpdaterAgent
+from threading import Thread
 
 BG_GRAY = "#ABB2B9"
 BG_COLOR = "#17202A"
@@ -9,6 +11,8 @@ TEXT_COLOR = "#EAECEE"
 
 FONT = "Helvetica 12"
 FONT_BOLD = "Helvetica 11 bold"
+
+WELCOME_MSG = "Hi, welcome to your movie recommender."
 
 class GUI:
     
@@ -22,14 +26,44 @@ class GUI:
         self.window = Tk()
         # Configuración de la ventana
         self._setupMainWindow()
+        # Mostramos un primer mensaje de bienvenida al usuario por la GUI
+        self.insertMessage(WELCOME_MSG, "MovieBot")
+
+
+    """
+    Permite utilizar la entrada de ficheros como prueba para el sistema.
+    Va leyendo el contenido de los ficheros que recibe y lo introduce en la GUI
+    como si de las frases dadas por el usuario se tratase. Espera 2 segundos para
+    introducir cada una de las frases (y que la conversación vaya apareciendo poco a poco).
     
+    :param self: objeto de la clase con el que se invoca.
+    :param filesTestPaths: lista de rutas a los ficheros de prueba para ejecutar.
+    """
+    def __testFile(self, filesTestPaths):
+        # Por cada ruta a un fichero de prueba
+        for fileTestPath in filesTestPaths:
+            # Creamos una nueva sesión de conversación con el chatbot
+            self.chatbotAgent.startChatSession() 
+            # Mostramos por la interfaz el nombre de la prueba automática que se está ejecutando
+            self.insertMessage("\nEJECUTANDO PRUEBA AUTOMÁTICA {}\n".format(fileTestPath))
+            # Con el fichero abierto
+            with open(fileTestPath) as testFile:
+                # Recorremos cada una de sus líneas
+                for entry in testFile.read().splitlines():
+                    # Escribimos la línea en la entrada
+                    self.msg_entry.insert(END, entry)
+                    # Presionamos el enter para introducir el texto
+                    self._onEnterPressed(None)
+                    # Esperamos 2 segundo antes de escribir la siguiente entrada.
+                    sleep(2)
 
     """
     Método que se ejecuta para lanzar la interfaz gráfica una vez está configurada.
     
     :param self: objeto de la clase con el que se invoca.
+
     """
-    def run(self):
+    def run(self, filesTestPaths):
         # Creamos al Agente Recomendador e iniciamos su comportamiento.
         self.recommenderAgent = RecommenderAgent("recomendador@xabber.de", "recomendador")
         future = self.recommenderAgent.start()
@@ -45,6 +79,10 @@ class GUI:
         self.chatbotAgent.setGui(self)
         future = self.chatbotAgent.start()
         future.result()
+
+        if len(filesTestPaths) > 0:
+            testThread = Thread(target=self.__testFile, args=(filesTestPaths,))
+            testThread.start()
 
         # Entramos en el bucle infinito de funcionamiento de la interfaz.
         self.window.mainloop()
@@ -106,6 +144,7 @@ class GUI:
         self.msg_entry.place(relwidth=0.74, relheight=0.06, rely=0.008, relx=0.011)
         self.msg_entry.focus()
         self.msg_entry.bind("<Return>", self._onEnterPressed)
+
         
         # Colocamos un botón que permitirá introducir el texto escrito en la entrada.
         # Presionar este botón invocará al método "_onEnterPressed".
@@ -156,3 +195,5 @@ class GUI:
         # Colocamos en la ventana de texto la cadena creada.
         self.text_widget.insert(END, msg1)
         self.text_widget.configure(state=DISABLED)
+        # Nos desplazamos hasta la última línea que se haya escrito en la ventana de texto.
+        self.text_widget.see("end")

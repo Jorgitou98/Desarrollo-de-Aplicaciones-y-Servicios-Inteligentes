@@ -1,9 +1,8 @@
+import sys
 from gui import GUI
 
 if __name__ == "__main__":
     # Creamos un objeto interfaz gráfica
     gui = GUI()
-    # Mostramos un primer mensaje de bienvenida al usuario por la GUI
-    gui.insertMessage("Hi, welcome to your movie recommender.", "MovieBot")
-    # Ejecutamos la GUI
-    gui.run()
+    # Ejecutamos la GUI con los parámetros recibidos para la ejecución
+    gui.run(sys.argv[1:])

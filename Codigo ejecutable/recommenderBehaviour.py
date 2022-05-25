@@ -51,22 +51,22 @@ class RecommenderBehaviour(CyclicBehaviour):
     """  
     def __loadTables(self, name):
         # Cargamos la tabla que traduce de nombre de usuario a su identificador
-        fileTable = open("nameIDTable.pkl", "rb")
+        fileTable = open("utils/nameIDTable.pkl", "rb")
         nameIDTable = pickle.load(fileTable)
         fileTable.close()
 
         # Cargamos el modelo Content Based que es una matriz Nx(N-1) donde la fila i-ésima contiene las N-1 peliculas distintas a la i
         # ordenadas según su similitud con la película i. Con mmap_mode='r' lo tratamos perezosamente (sin cargarlo entero en RAM) ya
         # solo querremos acceder a una de sus filas y es una matriz con miles de millones de elementos
-        contentBasedModelIdx = np.load("contentBasedModel.npy", mmap_mode='r')
+        contentBasedModelIdx = np.load("utils/contentBasedModel.npy", mmap_mode='r')
 
         # Cargamos las valoraciones de los usuarios que tenemos almacenadas, ordenadas de mayor a menor cada una de ellas
-        ratingsOrdered = pd.read_csv("ratings_ordered.csv")
+        ratingsOrdered = pd.read_csv("utils/ratings_ordered.csv")
 
         # En caso de que el usuario no esté en la tabla (puede ser nuevo), le añadimos con un identificador más que el máximo
         if name not in nameIDTable:
             nameIDTable[name] = max(nameIDTable.values()) + 1
-            fileTable = open("nameIDTable.pkl", "wb")
+            fileTable = open("utils/nameIDTable.pkl", "wb")
             pickle.dump(nameIDTable, fileTable)
             fileTable.close()
         
@@ -74,18 +74,18 @@ class RecommenderBehaviour(CyclicBehaviour):
         ratingsOrdered = ratingsOrdered[ratingsOrdered["userId"] == nameIDTable[name]]
 
         # Cargamos la tabla que, dado un id de película, proporciona su posición en los arrays de recomendación
-        fileTable = open("movieIDIndexTable.pkl", "rb")
+        fileTable = open("utils/movieIDIndexTable.pkl", "rb")
         movieIDIndexTable = pickle.load(fileTable)
         fileTable.close()
 
         # Cargamos la tabla que traduce de identificador de película a su título (devolveremos los títulos de las películas recomendadas)
-        fileTable = open("movieIDTitleTable.pkl", "rb")
+        fileTable = open("utils/movieIDTitleTable.pkl", "rb")
         movieIDTitleTable = pickle.load(fileTable)
         fileTable.close()
 
 
         # Cargamos la tabla que traduce de nombre de usuario a su ID
-        fileTable = open("nameIDTable.pkl", "rb")
+        fileTable = open("utils/nameIDTable.pkl", "rb")
         nameIDTable = pickle.load(fileTable)
         fileTable.close()
 
@@ -162,7 +162,7 @@ class RecommenderBehaviour(CyclicBehaviour):
     def __calculateRecommendationsWithGenre(self, userInfo, ratingsOrdered, contentBasedModelIdx, movieIDIndexTable, movieIDTitleTable, nameIDTable):
         recommendationResponse = {}
         # Calculamos los IDs de películas que son del género solicitado por el usuario (userInfo["genre"] es el género indicado por el usuario)
-        movieClean = pd.read_csv("movies_catalog_clean.csv")
+        movieClean = pd.read_csv("utils/movies_catalog_clean.csv")
         genreMovies = movieClean["id"][movieClean["genres"].apply(lambda l: userInfo["genre"] in l)]
 
         # Cogemos el ID de la película mejor valorada por el usuario que pertenezca al género que nos ha pedido,
@@ -220,7 +220,7 @@ class RecommenderBehaviour(CyclicBehaviour):
     """ 
     def __recommendUserWithoutRatings(self, userInfo):
         # Cargamos las películas del catálogo
-        movieClean = pd.read_csv("movies_catalog_clean.csv")
+        movieClean = pd.read_csv("utils/movies_catalog_clean.csv")
         
         # Ordenamos las películas según su número de votos para tenerlas en orden decreciende te popularidad
         popularMovies = movieClean[["title","vote_count"]].sort_values(by=["vote_count"], ascending=False)["title"]#[:5].to_list()
@@ -279,7 +279,7 @@ class RecommenderBehaviour(CyclicBehaviour):
     """ 
     def __recommendationsCollabModel(self, userInfo, ratingsOrdered, movieIDTitleTable, nameIDTable):
         # Cargamos el modelo colaborativo
-        fileTable = open("collabModel.pkl", "rb")
+        fileTable = open("utils/collabModel.pkl", "rb")
         collabModel = pickle.load(fileTable)
         fileTable.close()
         
