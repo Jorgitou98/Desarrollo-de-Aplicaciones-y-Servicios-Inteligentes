@@ -15,6 +15,7 @@ FONT_BOLD = "Helvetica 11 bold"
 WELCOME_MSG = "Hi, welcome to your movie recommender."
 
 class GUI:
+
     
     """
     Constructor de la interfaz gráfica con el usuario.
@@ -26,8 +27,6 @@ class GUI:
         self.window = Tk()
         # Configuración de la ventana
         self._setupMainWindow()
-        # Mostramos un primer mensaje de bienvenida al usuario por la GUI
-        self.insertMessage(WELCOME_MSG, "MovieBot")
 
 
     """
@@ -46,6 +45,8 @@ class GUI:
             self.chatbotAgent.startChatSession() 
             # Mostramos por la interfaz el nombre de la prueba automática que se está ejecutando
             self.insertMessage("\nEJECUTANDO PRUEBA AUTOMÁTICA {}\n".format(fileTestPath))
+            # Mostramos un primer mensaje de bienvenida al usuario por la GUI
+            self.insertMessage(WELCOME_MSG, "MovieBot")
             # Con el fichero abierto
             with open(fileTestPath) as testFile:
                 # Recorremos cada una de sus líneas
@@ -54,8 +55,14 @@ class GUI:
                     self.msg_entry.insert(END, entry)
                     # Presionamos el enter para introducir el texto
                     self._onEnterPressed(None)
-                    # Esperamos 2 segundo antes de escribir la siguiente entrada.
-                    sleep(2)
+                    # Marco como falso la respuesta del bot
+                    self.__botResponse = False
+                    # Esperamos a que nos haya respondido el bot
+                    while not self.__botResponse:
+                        pass
+                    # Tras tener la respuesta del bot, esperamos 2 segundos antes de escribir la siguiente entrada.
+                    sleep(1.5)
+
 
     """
     Método que se ejecuta para lanzar la interfaz gráfica una vez está configurada.
@@ -80,10 +87,15 @@ class GUI:
         future = self.chatbotAgent.start()
         future.result()
 
+        # Si hay ficheros de pruebas que ejecutar
         if len(filesTestPaths) > 0:
+            # Creamos y lanzamos un hilo que ejecute las pruebas
             testThread = Thread(target=self.__testFile, args=(filesTestPaths,))
             testThread.start()
-
+        # Si no hay ficheros de prueba que ejecutar
+        else:
+            # Mostramos un primer mensaje de bienvenida al usuario por la GUI
+            self.insertMessage(WELCOME_MSG, "MovieBot")
         # Entramos en el bucle infinito de funcionamiento de la interfaz.
         self.window.mainloop()
 
@@ -108,19 +120,19 @@ class GUI:
     :param self: objeto de la clase con el que se invoca.
     """     
     def _setupMainWindow(self):
-        # Colocamos el título de la interfaz
+        # Colocamos el título de la interfaz.
         self.window.title("Chat")
-        # Permitimos redimensionarla en anchura pero no en altura.
-        self.window.resizable(width=True, height=False)
+        # Permitimos redimensionarla la anchura y la altura de la ventana.
+        self.window.resizable(width=True, height=True)
         # Configuramos las dimensiones y el color de fondo de la interfaz.
         self.window.configure(width=900, height=800, bg=BG_COLOR)
         
-        # Colocamos la etiqueta de la cabecera de la interfaz
+        # Colocamos la etiqueta de la cabecera de la interfaz.
         head_label = Label(self.window, bg=BG_COLOR, fg=TEXT_COLOR,
                            text="Movie recommender chatbot", font=FONT_BOLD, pady=10)
         head_label.place(relwidth=1)
         
-        # Colocamos un separador entre la cabecera y el widget de texto
+        # Colocamos un separador entre la cabecera y el widget de texto.
         line = Label(self.window, width=450, bg=BG_GRAY)
         line.place(relwidth=1, rely=0.07, relheight=0.012)
         
@@ -197,3 +209,5 @@ class GUI:
         self.text_widget.configure(state=DISABLED)
         # Nos desplazamos hasta la última línea que se haya escrito en la ventana de texto.
         self.text_widget.see("end")
+        # Indicamos que ya existe una respuesta del bot
+        self.__botResponse = True

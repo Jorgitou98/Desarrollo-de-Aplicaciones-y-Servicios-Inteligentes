@@ -221,20 +221,22 @@ class RecommenderBehaviour(CyclicBehaviour):
     def __recommendUserWithoutRatings(self, userInfo):
         # Cargamos las películas del catálogo
         movieClean = pd.read_csv("utils/movies_catalog_clean.csv")
-        
-        # Ordenamos las películas según su número de votos para tenerlas en orden decreciende te popularidad
-        popularMovies = movieClean[["title","vote_count"]].sort_values(by=["vote_count"], ascending=False)["title"]#[:5].to_list()
-        
+
         # Si no hay restricción de género
-        if ("genre" not in userInfo) or (userInfo["genre"] is None):
-            # Devolvemos como recomendación las 5 más populares
-            return {"recommendationPopular": popularMovies[:5].to_list()}
+        if ("genre" in userInfo) and (userInfo["genre"] is not None):
+            # Filtramos quedándonos con las películas que sean de ese género
+            movieClean = movieClean[movieClean["genres"].apply(lambda l: userInfo["genre"] in l)]
+        
+        # Ordenamos las películas según su número de votos para tenerlas en orden decreciente de popularidad
+        popularMovies = movieClean[["title","vote_count"]].sort_values(by=["vote_count"], ascending=False)["title"]
+        
+        # Si hay restricción de género
+        if ("genre" in userInfo) and (userInfo["genre"] is not None):
+            # Devolvemos como recomendación las 5 más populares indicando que son del género pedido
+            return {"recommendationPopularWithGenre": popularMovies[:5].to_list()}
 
-        # Si hay alguna restricción de género, filtramos por las que sean de ese género
-        popularMovies = popularMovies[popularMovies["genres"].apply(lambda l: userInfo["genre"] in l)]
-
-        # Devolvemos las más populares que sean de ese género
-        return {"recommendationPopularWithGenre": popularMovies[:5].to_list()}
+        # Si no había restricción de género, devolvemos las devolvemos como populares en general
+        return {"recommendationPopular": popularMovies[:5].to_list()}
         
 
     """

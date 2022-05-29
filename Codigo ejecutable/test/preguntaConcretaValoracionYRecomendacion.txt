@@ -1,0 +1,9 @@
+Hello
+My name is Alfredo
+Can you make a pizza?
+I want to rate Inception
+Yes
+4.5
+Yes
+Recommend me a movie
+None

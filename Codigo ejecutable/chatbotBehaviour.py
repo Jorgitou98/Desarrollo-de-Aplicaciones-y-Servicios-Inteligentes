@@ -46,6 +46,8 @@ class ChatbotBehaviour(CyclicBehaviour):
             response = self.__sendTextToAgentDialogflow("completed")
         # Si el estado es el de que la conversación ha terminado
         elif actualPage == "End Conversation":
+            # Mostramos el mensaje de despedida con el usuario.
+            self.__printMovieResponse(response)
             # Esperamos unos segundos para que el usuario lea el mensaje de despedida.
             await asyncio.sleep(2)
             # Cerramos la GUI y con ello finalizamos la ejecución del sistema.
@@ -125,7 +127,7 @@ class ChatbotBehaviour(CyclicBehaviour):
             # Se le indica que se le recomiendan las siguientes películas de ese género en concreto.
             self.agent.gui.insertMessage("I don't know if I'm recommending you well, you haven't rated any movie yet. I can recommend these popular movies of {} genre:".format(parametersSend['genre']), "MovieBot")
             # Se muestra la lista de recomendaciones correspondiente.
-            self.__showRecommendationList(recommendations["recommendationPopular"])
+            self.__showRecommendationList(recommendations["recommendationPopularWithGenre"])
 
         # Si es una recomendación con restricción de género.
         elif "recommendContentBasedWithGenre" in recommendations:
@@ -146,7 +148,7 @@ class ChatbotBehaviour(CyclicBehaviour):
             # Si existen recomendaciones muy buenas que no se han dado porque son de otro género,
             # se muestran también indicándole al usuario que no son del género que solicitó
             if "bestRecommendationNotGiven" in recommendations:
-                self.agent.gui.insertMessage("Although they are not of the {} genre, I think you might like these other movies:".format(parametersSend['genre']), "MovieBot")
+                self.agent.gui.insertMessage("Although they are not of the {} genre, I think you might like these other movies:".format(parametersSend['genre']))
                 self.__showRecommendationList(recommendations["bestRecommendationNotGiven"]) 
 
         # Si las recomendaciones son sin rectricción de género                      
